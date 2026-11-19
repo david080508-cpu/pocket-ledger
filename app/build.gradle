@@ -2,6 +2,15 @@ plugins {
     id 'com.android.application'
 }
 
+// 发布签名：读取仓库根目录的 signing.properties（已 gitignore，不进仓库）。
+// 缺失时退回 debug 签名，保证 CI 和任何人 clone 后都能直接构建。
+def signingPropsFile = rootProject.file('signing.properties')
+def signingProps = new Properties()
+if (signingPropsFile.exists()) {
+    signingPropsFile.withInputStream { signingProps.load(it) }
+}
+def hasReleaseSigning = signingPropsFile.exists() && signingProps['storeFile']
+
 android {
     namespace 'com.pocketledger.app'
     compileSdk 34
@@ -14,17 +23,25 @@ android {
         versionName "1.0.0"
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile rootProject.file(signingProps['storeFile'])
+                storePassword signingProps['storePassword']
+                keyAlias signingProps['keyAlias']
+                keyPassword signingProps['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         debug {
-            applicationIdSuffix ""
             minifyEnabled false
         }
         release {
-            // Sideloading build: signed with the debug keystore so anyone can
-            // `gradlew assembleRelease` and install the APK directly.
-            // Replace with a private keystore before publishing to a store.
             minifyEnabled false
-            signingConfig signingConfigs.debug
+            // 有正式签名就用正式签名；否则用 debug 签名（方便侧载与 CI）
+            signingConfig hasReleaseSigning ? signingConfigs.release : signingConfigs.debug
         }
     }
 

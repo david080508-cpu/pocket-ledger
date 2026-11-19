@@ -77,6 +77,26 @@
 在 Actions 页面下载 `pocket-ledger-release` 产物即可（见 `.github/workflows/android.yml`）。
 Release 里的 APK 由本地稳定签名构建，保持同一签名才能覆盖安装、不丢数据。
 
+## 更新版本（不会丢数据）
+
+App 的数据存在 WebView 的 `localStorage` 里，**覆盖安装不会清数据**，只有卸载才会清空。
+所以更新时不要卸载旧版，直接装新版即可。
+
+更新流程：
+
+1. 修改代码
+2. `powershell -ExecutionPolicy Bypass -File tools\release.ps1 -Version 1.0.1`
+   （自动把 `versionCode` +1、改 `versionName`、构建、打印签名指纹）
+3. 把 `dist/pocket-ledger-1.0.1.apk` 传到手机，点安装 → 系统提示「更新」→ 确认
+4. 打开 App，记录、设置都还在
+
+**签名必须保持一致**，否则安卓会拒绝覆盖安装（只能卸载重装，数据丢失）。
+签名信息放在仓库外的 `signing.properties` + `pocket-ledger.jks`，
+`app/build.gradle` 会自动读取；文件不存在时退回 debug 签名，保证别人 clone 也能构建。
+
+> 换电脑、重装系统前请先备份 `pocket-ledger.jks`；同时定期在 App 里「导出备份（JSON）」，
+> 这是比签名更可靠的数据保险。
+
 ## 技术实现
 
 | 部分 | 做法 | 为什么 |

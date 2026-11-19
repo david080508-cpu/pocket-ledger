@@ -23,4 +23,8 @@ docs/_dbg.png
 app/src/main/assets/app/_preview*.html
 app/src/main/assets/app/_frame*.html
 
+# 本地签名配置与密钥（绝不进仓库）
+signing.properties
+*.jks
+
 *.log
