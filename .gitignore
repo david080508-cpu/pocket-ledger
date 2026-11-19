@@ -1,0 +1,26 @@
+# Build output
+*.iml
+.gradle/
+local.properties
+build/
+captures/
+.externalNativeBuild
+.cxx/
+*.apk
+*.aab
+*.keystore
+!debug.keystore
+
+# Local toolchain used only for verification (setup script installs it here)
+.toolchain/
+
+# Headless-browser scratch files
+.edge-tmp/
+.edge-profile/
+.edge-dom.txt
+.edge-err.log
+docs/_dbg.png
+app/src/main/assets/app/_preview*.html
+app/src/main/assets/app/_frame*.html
+
+*.log

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>NLP tests</title>
+<style>
+  body { font-family: system-ui, "Microsoft YaHei", sans-serif; margin: 16px; font-size: 13px; }
+  h1 { font-size: 16px; }
+  .pass { color: #0a7d4f; }
+  .fail { color: #c0182b; font-weight: 600; }
+  pre { margin: 2px 0 0 18px; color: #555; white-space: pre-wrap; }
+  #out div { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>一句话记账 · 解析器测试</h1>
+<div id="out">running…</div>
+<script src="../app/src/main/assets/app/nlp.js"></script>
+<script>
+(function () {
+  var NOW = new Date(2026, 10, 19, 12, 0, 0);
+
+  var cases = [
+    { name: '用户原句：妈妈给钱 + 中饭', text: '我妈妈给了我50块钱，然后中饭花了25块钱',
+      want: [
+        { type: 'income', cents: 5000, cat: 'other', date: '2026-11-19' },
+        { type: 'expense', cents: 2500, cat: 'food', date: '2026-11-19' }
+      ] },
+    { name: '昨天两笔支出', text: '昨天打车35，午饭吃面18',
+      want: [
+        { type: 'expense', cents: 3500, cat: 'transport', date: '2026-11-18' },
+        { type: 'expense', cents: 1800, cat: 'food', date: '2026-11-18' }
+      ] },
+    { name: '工资 + 房租', text: '发工资8000，交房租2500',
+      want: [
+        { type: 'income', cents: 800000, cat: 'salary', date: '2026-11-19' },
+        { type: 'expense', cents: 250000, cat: 'home', date: '2026-11-19' }
+      ] },
+    { name: '购物 + 红包收入', text: '买了双鞋399，红包收了200',
+      want: [
+        { type: 'expense', cents: 39900, cat: 'shopping', date: '2026-11-19' },
+        { type: 'income', cents: 20000, cat: 'redpacket', date: '2026-11-19' }
+      ] },
+    { name: '中文数字金额', text: '水电费一百二十块',
+      want: [{ type: 'expense', cents: 12000, cat: 'home', date: '2026-11-19' }] },
+    { name: '只给金额没有方向词', text: '花了15块',
+      want: [{ type: 'expense', cents: 1500, cat: 'other', date: '2026-11-19' }] },
+    { name: '指定日期', text: '11月3日看电影花了60',
+      want: [{ type: 'expense', cents: 6000, cat: 'fun', date: '2026-11-03' }] },
+    { name: '无金额不记账', text: '今天天气不错', want: [] },
+    { name: '口语省略动词', text: '中饭25',
+      want: [{ type: 'expense', cents: 2500, cat: 'food', date: '2026-11-19' }] },
+    { name: '给妈妈钱算支出', text: '我给我妈200',
+      want: [{ type: 'expense', cents: 20000, cat: 'other', date: '2026-11-19' }] },
+    { name: '量词不是金额', text: '买了2个苹果，花了15块',
+      want: [{ type: 'expense', cents: 1500, cat: 'food', date: '2026-11-19' }] },
+    { name: '多笔用顿号分隔', text: '早饭12、地铁8、奶茶22',
+      want: [
+        { type: 'expense', cents: 1200, cat: 'food', date: '2026-11-19' },
+        { type: 'expense', cents: 800, cat: 'transport', date: '2026-11-19' },
+        { type: 'expense', cents: 2200, cat: 'food', date: '2026-11-19' }
+      ] },
+    { name: '退款算收入', text: '淘宝退给我199',
+      want: [{ type: 'income', cents: 19900, cat: 'other', date: '2026-11-19' }] }
+  ];
+
+  var out = document.getElementById('out');
+  out.innerHTML = '';
+  var pass = 0, fail = 0, fails = [];
+
+  cases.forEach(function (c) {
+    var got = window.PocketNlp.parse(c.text, NOW).items;
+    var ok = got.length === c.want.length;
+    if (ok) {
+      for (var i = 0; i < got.length; i++) {
+        var g = got[i], w = c.want[i];
+        if (g.type !== w.type || g.amountCents !== w.cents || g.category !== w.cat || g.date !== w.date) { ok = false; break; }
+      }
+    }
+    var row = document.createElement('div');
+    if (ok) {
+      pass++;
+      row.className = 'pass';
+      row.textContent = 'PASS  ' + c.name;
+    } else {
+      fail++;
+      fails.push(c.name);
+      row.className = 'fail';
+      row.textContent = 'FAIL  ' + c.name + '  («' + c.text + '»)';
+      var pre = document.createElement('pre');
+      pre.textContent = 'got : ' + (got.length ? got.map(function (g) {
+        return g.type + ' ' + (g.amountCents / 100) + ' ' + g.category + ' ' + g.date + ' [' + g.note + ']';
+      }).join(' | ') : '(空)') + '\nwant: ' + (c.want.length ? c.want.map(function (w) {
+        return w.type + ' ' + (w.cents / 100) + ' ' + w.cat + ' ' + w.date;
+      }).join(' | ') : '(空)');
+      row.appendChild(pre);
+    }
+    out.appendChild(row);
+  });
+
+  var sum = window.PocketNlp.parse('我妈妈给了我50块钱，然后中饭花了25块钱', NOW).summary;
+  var s = document.createElement('div');
+  s.style.marginTop = '12px';
+  s.textContent = '汇总: 收入 ' + (sum.income / 100) + ' / 支出 ' + (sum.expense / 100) + ' / 净 ' + (sum.net / 100);
+  out.appendChild(s);
+
+  var t = document.createElement('div');
+  t.id = 'total';
+  t.style.marginTop = '8px';
+  t.textContent = 'RESULT: ' + pass + ' passed, ' + fail + ' failed';
+  out.appendChild(t);
+  document.title = fail ? 'FAIL ' + fail : 'OK ' + pass;
+})();
+</script>
+</body>
+</html>

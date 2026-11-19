@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffb703">
+<meta name="description" content="口袋账本 —— 离线记账小工具，说一句话就能记好几笔。">
+<title>口袋账本</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app" class="app">
+
+  <header class="head">
+    <div class="head-top">
+      <div class="month-nav">
+        <button class="arrow" id="prevMonth" type="button" aria-label="上个月">‹</button>
+        <button class="month-pick" id="monthLabel" type="button">2026年11月</button>
+        <button class="arrow" id="nextMonth" type="button" aria-label="下个月">›</button>
+      </div>
+      <button class="icon-btn" id="btnTheme" type="button" title="切换外观" aria-label="切换外观">◐</button>
+    </div>
+
+    <div class="hero">
+      <div class="hero-main">
+        <span class="label">本月支出</span>
+        <strong id="sumExpense">¥0.00</strong>
+      </div>
+      <div class="hero-side">
+        <div><span>收入</span><b id="sumIncome">¥0.00</b></div>
+        <div><span>结余</span><b id="sumBalance">¥0.00</b></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ============ 明细 ============ -->
+    <section class="view active" id="view-home">
+      <button class="talk-entry" id="btnTalk" type="button">
+        <span class="talk-ico">💬</span>
+        <span class="talk-text">
+          <b>说一句话就行</b>
+          <i>“妈妈给我50，中饭花了25”</i>
+        </span>
+        <span class="talk-go">›</span>
+      </button>
+
+      <div class="chips" id="quickChips"></div>
+      <div id="recordList" class="records"></div>
+    </section>
+
+    <!-- ============ 图表 ============ -->
+    <section class="view" id="view-stats">
+      <div class="monthbar">
+        <button class="arrow" id="prevMonth2" type="button" aria-label="上个月">‹</button>
+        <span class="month-title" id="monthLabel2">2026年11月</span>
+        <button class="arrow" id="nextMonth2" type="button" aria-label="下个月">›</button>
+      </div>
+
+      <div class="cards3">
+        <div class="mini"><span>本月支出</span><b class="expense" id="stExpense">¥0.00</b></div>
+        <div class="mini"><span>日均支出</span><b id="stAvg">¥0.00</b></div>
+        <div class="mini"><span>笔数</span><b id="stCount">0</b></div>
+      </div>
+
+      <h2 class="sect">支出分类</h2>
+      <div class="card pad" id="catBreakdown"></div>
+
+      <h2 class="sect">近 6 个月支出</h2>
+      <div class="card pad">
+        <div class="bars" id="monthBars"></div>
+      </div>
+    </section>
+
+    <!-- ============ 我的 ============ -->
+    <section class="view" id="view-settings">
+      <h2 class="sect">数据</h2>
+      <div class="card list">
+        <button class="row" id="btnExportCsv" type="button">
+          <span class="row-ico">📄</span>
+          <span class="row-main"><b>导出 CSV</b><i>到「文件管理 → Download」找</i></span>
+          <span class="row-go">›</span>
+        </button>
+        <button class="row" id="btnExportJson" type="button">
+          <span class="row-ico">💾</span>
+          <span class="row-main"><b>导出备份（JSON）</b><i>换手机或重装前先备份</i></span>
+          <span class="row-go">›</span>
+        </button>
+        <button class="row" id="btnImport" type="button">
+          <span class="row-ico">📥</span>
+          <span class="row-main"><b>从备份恢复</b><i>会覆盖当前全部记录</i></span>
+          <span class="row-go">›</span>
+        </button>
+        <button class="row danger" id="btnClear" type="button">
+          <span class="row-ico">🗑️</span>
+          <span class="row-main"><b>清空全部记录</b><i>不可恢复，请先备份</i></span>
+          <span class="row-go">›</span>
+        </button>
+      </div>
+
+      <h2 class="sect">外观</h2>
+      <div class="card list">
+        <div class="row">
+          <span class="row-ico">🌗</span>
+          <span class="row-main"><b>深色模式</b><i>跟随系统或手动切换</i></span>
+          <select id="themeSelect" class="select">
+            <option value="system">跟随系统</option>
+            <option value="light">关闭</option>
+            <option value="dark">打开</option>
+          </select>
+        </div>
+      </div>
+
+      <h2 class="sect">关于</h2>
+      <div class="card list">
+        <div class="row">
+          <span class="row-ico">📦</span>
+          <span class="row-main"><b>口袋账本 <span id="appVersion">1.0.0</span></b><i>开源 · MIT 许可</i></span>
+        </div>
+        <div class="row">
+          <span class="row-ico">🔒</span>
+          <span class="row-main"><b>隐私</b><i>无网络权限，数据只存本机</i></span>
+        </div>
+        <button class="row" id="btnRepo" type="button">
+          <span class="row-ico">🔗</span>
+          <span class="row-main"><b>项目主页</b><i id="repoUrl">github.com</i></span>
+          <span class="row-go">›</span>
+        </button>
+      </div>
+
+      <p class="footnote">浏览器打开同一页面也能用；装 APK 后即为完全离线。</p>
+    </section>
+  </main>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab active" data-view="home" type="button"><span class="ti">🧾</span><span>明细</span></button>
+    <button class="tab" data-view="stats" type="button"><span class="ti">📊</span><span>图表</span></button>
+    <span class="tab-gap"></span>
+    <button class="tab" data-view="settings" type="button"><span class="ti">🙂</span><span>我的</span></button>
+    <button class="tab" id="tabTalk" type="button"><span class="ti">💬</span><span>一句话</span></button>
+  </nav>
+
+  <button class="fab" id="fab" type="button" aria-label="记一笔">
+    <span class="plus">＋</span>
+    <span class="fab-text">记账</span>
+  </button>
+</div>
+
+<!-- ============ 记账面板 ============ -->
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-head">
+    <button class="text-btn danger" id="btnDelete" type="button" hidden>删除</button>
+    <button class="text-btn" id="btnCancel" type="button">取消</button>
+    <div class="seg" id="typeSeg">
+      <button data-type="expense" class="active" type="button">支出</button>
+      <button data-type="income" type="button">收入</button>
+    </div>
+    <button class="text-btn primary" id="btnSave" type="button">保存</button>
+  </div>
+
+  <div class="amount-box">
+    <span class="cur">¥</span><span id="amountText">0.00</span>
+  </div>
+
+  <div class="cats" id="cats"></div>
+
+  <div class="meta-row">
+    <input class="date-input" id="dateInput" type="date">
+    <input class="note-input" id="noteInput" type="text" maxlength="60" placeholder="备注（可不填）">
+  </div>
+
+  <div class="keypad" id="keypad">
+    <button data-k="1" type="button">1</button>
+    <button data-k="2" type="button">2</button>
+    <button data-k="3" type="button">3</button>
+    <button data-k="4" type="button">4</button>
+    <button data-k="5" type="button">5</button>
+    <button data-k="6" type="button">6</button>
+    <button data-k="7" type="button">7</button>
+    <button data-k="8" type="button">8</button>
+    <button data-k="9" type="button">9</button>
+    <button data-k="." type="button">.</button>
+    <button data-k="0" type="button">0</button>
+    <button data-k="del" class="del" type="button" aria-label="退格">⌫</button>
+  </div>
+</section>
+
+<!-- ============ 一句话记账 ============ -->
+<section class="talk" id="talk" aria-hidden="true">
+  <header class="talk-head">
+    <button class="text-btn" id="talkClose" type="button">关闭</button>
+    <b>一句话记账</b>
+    <button class="text-btn primary" id="talkParse" type="button">解析</button>
+  </header>
+
+  <div class="talk-body">
+    <textarea id="talkInput" rows="3" maxlength="200"
+      placeholder="例如：妈妈给了我50块钱，然后中饭花了25块钱"></textarea>
+
+    <div class="samples" id="talkSamples"></div>
+
+    <div class="hint">点输入法键盘上的 🎤 可以直接说话；解析结果可以逐条改类型或删掉。</div>
+
+    <div class="talk-result" id="talkResult"></div>
+  </div>
+
+  <footer class="talk-foot" id="talkFoot" hidden>
+    <div class="totals" id="talkTotals"></div>
+    <button class="primary-btn" id="talkSaveAll" type="button">全部记入</button>
+  </footer>
+</section>
+
+<input type="file" id="filePicker" accept=".json,application/json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="nlp.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

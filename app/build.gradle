@@ -1,0 +1,43 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.pocketledger.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.pocketledger.app"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ""
+            minifyEnabled false
+        }
+        release {
+            // Sideloading build: signed with the debug keystore so anyone can
+            // `gradlew assembleRelease` and install the APK directly.
+            // Replace with a private keystore before publishing to a store.
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // No third-party runtime dependencies: the UI is a bundled WebView app,
+    // persistence is localStorage inside the WebView, and CSV export goes
+    // through MediaStore. That keeps the APK tiny and fully offline.
+}
+
+tasks.register('printVersion') {
+    doLast { println "${android.defaultConfig.versionName} (${android.defaultConfig.versionCode})" }
+}
