@@ -74,7 +74,8 @@
 产物在 `app/build/outputs/apk/`。
 
 不想装环境也可以：推到 GitHub 后由 Actions 自动构建，
-打 `v*` 标签时会自动把 APK 附到 Release 上（见 `.github/workflows/android.yml`）。
+在 Actions 页面下载 `pocket-ledger-release` 产物即可（见 `.github/workflows/android.yml`）。
+Release 里的 APK 由本地稳定签名构建，保持同一签名才能覆盖安装、不丢数据。
 
 ## 技术实现
 
